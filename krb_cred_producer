@@ -18,7 +18,7 @@ fi
 }
 
 CCV=`which condor_config_val`
-if [[ -n "$CCV" ]]; then
+if [[ $CCV ]]; then
         logging "found $CCV"
 else
         logging "couldn't find condor_config_val"
@@ -26,7 +26,7 @@ else
 fi
 
 CONDOR_SBIN=`condor_config_val SBIN`
-if [[ -n "$CONDOR_SBIN" ]]; then
+if [[ $CONDOR_SBIN ]]; then
         logging "found SBIN $SBIN"
 else
         logging "couldn't find condor SBIN"
@@ -34,7 +34,7 @@ else
 fi
 
 KL=`which klist`
-if [[ -n "$KL" ]]; then
+if [[ $KL ]]; then
         logging "found $KL"
 else
         logging "couldn't find klist"
@@ -42,7 +42,7 @@ else
 fi
 
 PRINCE=`klist 2>/dev/null | grep rincipal:`
-if [[ -n "$PRINCE" ]]; then
+if [[ $PRINCE ]]; then
         logging "using $PRINCE"
 else
         logging "couldn't find user principal using klist"
@@ -57,7 +57,7 @@ else
         exit 1
 fi
 
-if [[ -n $KRB5CCNAME ]]; then
+if [[ $KRB5CCNAME ]]; then
         logging "using $KRB5CCNAME"
 else
         logging "KRB5CCNAME not set!"
@@ -65,18 +65,18 @@ else
 fi
 
 
-if [[ -n $KRB5CCNAME && -f ${KRB5CCNAME#FILE:} ]]; then
+if [[ $KRB5CCNAME && -f ${KRB5CCNAME#FILE:} ]]; then
         if [[ $CONDOR_AKLOG ]]; then
                 logging "successfully ran $CONDOR_AKLOG"
         else
-                logging "failed to run$CONDOR_AKLOG"
+                logging "failed to run $CONDOR_AKLOG"
                 exit 1
         fi
         CCFILE=${KRB5CCNAME#FILE:}
         cat "$CCFILE"
         logging "produced contents of $CCFILE"
 else
-        logging "$KRB5CCNAME doesn't exist!""
+        logging "$KRB5CCNAME doesn't exist!"
         exit 1
 fi
 
