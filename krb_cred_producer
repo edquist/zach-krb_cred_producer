@@ -1,0 +1,84 @@
+#!/bin/bash
+###########################################
+# DESY HTCondor Config                    #
+###########################################
+
+DEBUGFILE=/tmp/htckrb5debug.$USER
+COMMAND=$0
+CCDIR="$*"
+
+# UNCOMMENT THE LINE BELOW TO ENABLE DEBUGGING:
+#touch $DEBUGFILE
+
+logging () {
+if [[ -f $DEBUGFILE ]]; then
+    DATE=$(date +'%T %x')
+    echo "$DATE $COMMAND $CCDIR $1" >> $DEBUGFILE
+fi
+}
+
+CCV=`which condor_config_val`
+if [[ -n "$CCV" ]]; then
+        logging "found $CCV"
+else
+        logging "couldn't find condor_config_val"
+        exit 1
+fi
+
+CONDOR_SBIN=`condor_config_val SBIN`
+if [[ -n "$CONDOR_SBIN" ]]; then
+        logging "found SBIN $SBIN"
+else
+        logging "couldn't find condor SBIN"
+        exit 1
+fi
+
+KL=`which klist`
+if [[ -n "$KL" ]]; then
+        logging "found $KL"
+else
+        logging "couldn't find klist"
+        exit 1
+fi
+
+PRINCE=`klist 2>/dev/null | grep rincipal:`
+if [[ -n "$PRINCE" ]]; then
+        logging "using $PRINCE"
+else
+        logging "couldn't find user principal using klist"
+        exit 1
+fi
+
+CONDOR_AKLOG=$CONDOR_SBIN/condor_aklog
+if [[ -f $CONDOR_AKLOG ]]; then
+        logging "found $CONDOR_AKLOG"
+else
+        logging "couldn't find $CONDOR_AKLOG"
+        exit 1
+fi
+
+if [[ -n $KRB5CCNAME ]]; then
+        logging "using $KRB5CCNAME"
+else
+        logging "KRB5CCNAME not set!"
+        exit 1
+fi
+
+
+if [[ -n $KRB5CCNAME && -f ${KRB5CCNAME#FILE:} ]]; then
+        if [[ $CONDOR_AKLOG ]]; then
+                logging "successfully ran $CONDOR_AKLOG"
+        else
+                logging "failed to run$CONDOR_AKLOG"
+                exit 1
+        fi
+        CCFILE=${KRB5CCNAME#FILE:}
+        cat "$CCFILE"
+        logging "produced contents of $CCFILE"
+else
+        logging "$KRB5CCNAME doesn't exist!""
+        exit 1
+fi
+
+exit 0
+
